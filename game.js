@@ -1,7 +1,7 @@
 /* Bella's Dino Land — game logic. Tap-only, no reading needed, every prompt is spoken. */
 (function () {
   const $ = s => document.querySelector(s);
-  const screens = { start: $("#screen-start"), home: $("#screen-home"), game: $("#screen-game"), win: $("#screen-win") };
+  const screens = { start: $("#screen-start"), home: $("#screen-home"), game: $("#screen-game"), win: $("#screen-win"), voice: $("#screen-voice") };
   const stage = $("#stage"), promptEl = $("#prompt"), starsEl = $("#stars");
   const PLAYER = "Bella";
   let current = null;      // current game id
@@ -488,6 +488,22 @@
     b.onclick = () => { SFX.tap(); startGame(b.dataset.game); };
   });
   $("#btn-home").onclick = () => { SFX.tap(); goHome(); };
+
+  // Grown-ups' voice picker
+  function renderVoices() {
+    const list = $("#voice-list"); list.innerHTML = "";
+    const vs = VOICE.voices(), cur = VOICE.current();
+    if (!vs.length) { list.innerHTML = '<div class="voice-opt">No voices found on this device yet. Tap Done and try again.</div>'; return; }
+    vs.forEach(v => {
+      const b = document.createElement("button");
+      b.className = "voice-opt" + (cur && cur.voiceURI === v.voiceURI ? " on" : "");
+      b.innerHTML = `<span>${VOICE.label(v)}</span><span class="tick">${cur && cur.voiceURI === v.voiceURI ? "✅" : ""}</span>`;
+      b.onclick = () => { VOICE.setVoice(v.voiceURI); VOICE.say(`Hello ${PLAYER}! Let's play with the dinosaurs!`); renderVoices(); };
+      list.appendChild(b);
+    });
+  }
+  $("#btn-voice").onclick = () => { SFX.unlock(); show("voice"); renderVoices(); setTimeout(renderVoices, 400); };
+  $("#btn-voice-back").onclick = () => { SFX.tap(); show("start"); };
   $("#btn-repeat").onclick = () => { SFX.tap(); VOICE.repeat(); };
   $("#btn-again").onclick = () => { SFX.tap(); startGame(current); };
   $("#btn-win-home").onclick = () => { SFX.tap(); goHome(); };

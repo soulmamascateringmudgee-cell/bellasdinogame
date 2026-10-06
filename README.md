@@ -24,6 +24,12 @@ A tap-only dinosaur game for a three-year-old. Runs in any phone or tablet brows
 
 Tip: the first tap on "Tap to play!" is what switches the sound and voice on (browsers require a tap first).
 
+## Making the voice sound natural
+The game uses the voices built into the device. The default ones can sound robotic.
+- **iPad / iPhone:** Settings → Accessibility → Spoken Content → Voices → English → Australian → Karen → download **Enhanced** (or **Premium**). Reopen the game, then tap the small **Voice** button on the start screen and pick the starred voice.
+- **Android / Chrome:** the Google voices are picked automatically. The **Voice** button lets you choose another.
+- The chosen voice is remembered on that device.
+
 ## Files
 - `index.html` – screens
 - `style.css` – looks and animations

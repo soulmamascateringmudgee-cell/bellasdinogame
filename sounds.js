@@ -83,20 +83,33 @@
   };
 
   /* ---------- Voice ---------- */
+  const VKEY = "dinoland.voice";
   let voice = null, voicesReady = false;
+  function score(v) {
+    const n = (v.name + " " + v.voiceURI).toLowerCase(), l = (v.lang || "").toLowerCase();
+    if (!/^en/.test(l)) return -1;
+    let sc = 0;
+    if (/premium/.test(n)) sc += 50;
+    if (/enhanced/.test(n)) sc += 40;
+    if (/natural|neural|online|wavenet|journey|studio/.test(n)) sc += 45;   // Edge / Chrome / Android neural voices
+    if (/google/.test(n)) sc += 20;
+    if (/compact|espeak|robot/.test(n)) sc -= 30;
+    if (/en-au/.test(l)) sc += 15; else if (/en-gb|en-nz|en-ie/.test(l)) sc += 8; else if (/en-us/.test(l)) sc += 5;
+    if (/karen|catherine|libby|sonia|samantha|aria|jenny|zira|moira|fiona|female|woman/.test(n)) sc += 6;
+    if (v.localService) sc += 2;
+    return sc;
+  }
+  function englishVoices() {
+    if (!("speechSynthesis" in window)) return [];
+    return speechSynthesis.getVoices().filter(v => score(v) >= 0).sort((a, b) => score(b) - score(a));
+  }
   function pickVoice() {
-    if (!("speechSynthesis" in window)) return;
-    const vs = speechSynthesis.getVoices();
+    const vs = englishVoices();
     if (!vs.length) return;
     voicesReady = true;
-    const pref = [
-      v => /en-AU/i.test(v.lang) && /karen|catherine|female|natural/i.test(v.name),
-      v => /en-AU/i.test(v.lang),
-      v => /en-GB/i.test(v.lang) && /female|natural|libby|sonia/i.test(v.name),
-      v => /en/i.test(v.lang) && /samantha|zira|aria|female|natural/i.test(v.name),
-      v => /en/i.test(v.lang)
-    ];
-    for (const p of pref) { const v = vs.find(p); if (v) { voice = v; break; } }
+    let saved = null;
+    try { saved = localStorage.getItem(VKEY); } catch (e) {}
+    voice = (saved && vs.find(v => v.voiceURI === saved || v.name === saved)) || vs[0];
   }
   if ("speechSynthesis" in window) {
     pickVoice();
@@ -111,18 +124,26 @@
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      if (voice) u.voice = voice;
-      u.lang = voice ? voice.lang : "en-AU";
-      u.rate = opts.rate || 0.92;
-      u.pitch = opts.pitch || 1.15;
+      if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = "en-AU";
+      u.rate = opts.rate || 0.95;
+      u.pitch = opts.pitch || 1.0;      // natural pitch; raising it is what makes voices sound like a robot
       u.volume = 1;
-      // iOS sometimes needs a tiny delay after cancel()
-      setTimeout(() => speechSynthesis.speak(u), 60);
+      setTimeout(() => speechSynthesis.speak(u), 60);   // iOS needs a beat after cancel()
     } catch (e) { /* voice is a bonus; never block the game */ }
   }
   function repeat() { if (lastText) say(lastText); }
   function hush() { try { speechSynthesis.cancel(); } catch (e) {} }
+  function setVoice(uri) {
+    const v = englishVoices().find(x => x.voiceURI === uri || x.name === uri);
+    if (v) { voice = v; try { localStorage.setItem(VKEY, v.voiceURI); } catch (e) {} }
+  }
+  function current() { return voice; }
+  function label(v) {
+    const n = (v.name + " " + v.voiceURI).toLowerCase();
+    const q = /premium/.test(n) ? " ★★★" : /enhanced|natural|neural|online|wavenet/.test(n) ? " ★★" : "";
+    return `${v.name}${q} (${v.lang})`;
+  }
 
   window.SFX = SFX;
-  window.VOICE = { say, repeat, hush };
+  window.VOICE = { say, repeat, hush, setVoice, current, voices: englishVoices, label };
 })();
