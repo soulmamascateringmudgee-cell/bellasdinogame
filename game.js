@@ -6,12 +6,13 @@
   const PLAYER = "Bella";
   let current = null;      // current game id
   let busy = false;        // blocks taps during little animations
-  let timers = [];
+  let timers = [], intervals = [];
 
   const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const pick = (a, n) => shuffle(a).slice(0, n);
   const later = (fn, ms) => { const t = setTimeout(fn, ms); timers.push(t); return t; };
-  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+  const every = (fn, ms) => { const t = setInterval(fn, ms); intervals.push(t); return t; };
+  const clearTimers = () => { timers.forEach(clearTimeout); timers = []; intervals.forEach(clearInterval); intervals = []; $("#night").classList.remove("on"); };
   const dinoById = id => DINOS.find(d => d.id === id);
 
   function show(name) {
@@ -236,6 +237,231 @@
         };
         stage.appendChild(card);
       });
+    }
+  };
+
+
+  // 7. Dino Family — look after Mummy, Daddy and Baby (tamagotchi style, saved between visits).
+  games.family = {
+    KEY: "dinoland.family.v1",
+    NEEDS: [["food", null], ["clean", "🛁"], ["sleep", "😴"], ["play", "⚽"]],
+    RATE: { food: 4, play: 6, sleep: 9, clean: 12 },   // minutes per heart lost
+    ROLE: { dad: { label: "Daddy", pitch: 0.6 }, mum: { label: "Mummy", pitch: 1 }, baby: { label: "Baby", pitch: 1.7 } },
+    load() { try { return JSON.parse(localStorage.getItem(this.KEY)) || {}; } catch (e) { return {}; } },
+    save() { try { localStorage.setItem(this.KEY, JSON.stringify(this.db)); } catch (e) {} },
+    fresh() { const now = Date.now(); return { food: 3, clean: 3, sleep: 3, play: 3, last: { food: now, clean: now, sleep: now, play: now } }; },
+    fam() { return this.db.fam[this.db.species]; },
+    decay() {
+      const now = Date.now();
+      Object.values(this.fam().members).forEach(m => {
+        Object.keys(this.RATE).forEach(k => {
+          const ms = this.RATE[k] * 60000, drops = Math.floor((now - m.last[k]) / ms);
+          if (drops > 0) { m[k] = Math.max(0, m[k] - drops); m.last[k] += drops * ms; }
+        });
+      });
+      this.save();
+    },
+    start() {
+      this.db = this.load();
+      if (!this.db.fam) this.db.fam = {};
+      this.selected = null; this.excited = null;
+      if (!this.db.species) this.picker(); else this.scene(true);
+    },
+    picker() {
+      stage.innerHTML = "";
+      prompt("Pick your dino family! 🏡", "Which dinosaur family do you want to look after?");
+      const grid = document.createElement("div"); grid.className = "fam-pick";
+      DINOS.forEach(d => {
+        const card = document.createElement("button"); card.className = "dino-card";
+        card.innerHTML = makeDino(d.id, d.colour, { role: "mum" }) + `<div class="label">${d.name}</div>`;
+        card.onclick = () => {
+          SFX.dino(d.id); animate(card, "bounce");
+          this.db.species = d.id;
+          if (!this.db.fam[d.id]) this.db.fam[d.id] = { hatched: false, taps: 0, members: { dad: this.fresh(), mum: this.fresh(), baby: this.fresh() } };
+          this.save(); this.selected = null;
+          later(() => this.scene(true), 500);
+        };
+        grid.appendChild(card);
+      });
+      stage.appendChild(grid);
+    },
+    species() { return dinoById(this.db.species); },
+    mood(role) {
+      const m = this.fam().members[role];
+      if (m.sleeping) return "sleepy";
+      if (this.excited === role) return "excited";
+      if (m.food <= 1) return "hungry";
+      return "happy";
+    },
+    lowest(role) {
+      const m = this.fam().members[role];
+      if (m.sleeping) return "💤";
+      const low = this.NEEDS.filter(([k]) => m[k] <= 1).sort((a, b) => m[a[0]] - m[b[0]])[0];
+      if (!low) return null;
+      return low[1] || FOODS[this.species().food].emoji;
+    },
+    eggSVG(taps) {
+      const cracks = [
+        "", "M44 40 l6 8 l-5 7",
+        "M44 40 l6 8 l-5 7 M62 70 l-7 6 l6 7",
+        "M44 40 l6 8 l-5 7 l7 6 M62 70 l-7 6 l6 7 M30 80 l8 -4 l3 8",
+        "M44 40 l6 8 l-5 7 l7 6 l-4 9 M62 70 l-7 6 l6 7 l-8 5 M30 80 l8 -4 l3 8 l6 2 M70 45 l-6 6 l5 6"
+      ][Math.min(taps, 4)];
+      return `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="66" rx="38" ry="48" fill="#fff6d5" stroke="#3b2f4a" stroke-width="4"/>
+        <ellipse cx="38" cy="48" rx="10" ry="14" fill="#fff" opacity=".7"/>
+        <circle cx="62" cy="52" r="5" fill="#bfe3c0"/><circle cx="40" cy="86" r="6" fill="#bfe3c0"/><circle cx="66" cy="92" r="4" fill="#bfe3c0"/>
+        <path d="${cracks}" stroke="#3b2f4a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>`;
+    },
+    scene(greet) {
+      this.decay();
+      const d = this.species(), f = this.fam();
+      if (!this.selected) this.selected = f.hatched ? "baby" : "mum";
+      stage.innerHTML = "";
+      const wrap = document.createElement("div"); wrap.className = "family";
+
+      // needs bar for the selected family member
+      const m = f.members[this.selected];
+      const bar = document.createElement("div"); bar.className = "needs";
+      bar.innerHTML = `<span class="who">${this.ROLE[this.selected].label}</span>` + this.NEEDS.map(([k, icon]) =>
+        `<span class="need">${icon || FOODS[d.food].emoji}<span class="hearts">${"❤️".repeat(m[k])}${"🤍".repeat(3 - m[k])}</span></span>`).join("");
+      wrap.appendChild(bar);
+
+      // the scene: nest, trees, dad, baby/egg, mum
+      const sc = document.createElement("div"); sc.className = "scene";
+      sc.innerHTML = `<span class="deco" style="left:2%;bottom:6vmin">🌴</span><span class="deco" style="right:2%;bottom:6vmin">🌳</span><span class="deco" style="left:12%;bottom:4vmin;font-size:4vmin">🌸</span><span class="deco" style="right:14%;bottom:3vmin;font-size:4vmin">🌼</span>`;
+      const member = role => {
+        const mm = f.members[role];
+        const el = document.createElement("button");
+        el.className = `member ${role}` + (this.selected === role ? " selected" : "");
+        el.innerHTML = makeDino(d.id, d.colour, { role, mood: this.mood(role), mud: mm.clean === 0 }) + `<span class="tag">${this.ROLE[role].label}</span>`;
+        const want = this.lowest(role);
+        if (want) el.insertAdjacentHTML("beforeend", `<span class="bubble">${want}</span>`);
+        el.onclick = () => {
+          if (busy) return;
+          this.selected = role;
+          SFX.dino(d.id, this.ROLE[role].pitch);
+          const lines = {
+            dad: [`Hello ${PLAYER}! I'm Daddy ${d.say}. Rawr!`, `Daddy ${d.say} is here! Stomp, stomp, stomp!`],
+            mum: [`Hello sweetheart! I'm Mummy ${d.say}.`, `Mummy ${d.say} gives the best cuddles!`],
+            baby: [`Hi ${PLAYER}! I'm Baby ${d.say}! Will you play with me?`, `Baby ${d.say} loves you, ${PLAYER}!`]
+          }[role];
+          VOICE.say(mm.sleeping ? `Shh! ${this.ROLE[role].label} is sleeping.` : pick(lines, 1)[0]);
+          this.scene(); animate(stage.querySelector(`.member.${role}`), "bounce");
+        };
+        return el;
+      };
+      sc.appendChild(member("dad"));
+      if (f.hatched) sc.appendChild(member("baby"));
+      else {
+        const egg = document.createElement("button"); egg.className = "egg-btn";
+        egg.innerHTML = this.eggSVG(f.taps) + `<span class="tag" style="font-weight:900;color:#fff;background:rgba(0,0,0,.25);border-radius:999px;padding:2px 12px">Egg</span>`;
+        egg.onclick = () => {
+          if (busy) return;
+          f.taps++; this.save();
+          SFX.crack(); animate(egg, "wiggle");
+          egg.firstElementChild.outerHTML = this.eggSVG(f.taps);
+          const cheer = ["It's wobbling!", "I can hear a tap, tap, tap!", "Keep it warm!", "Nearly there!"];
+          if (f.taps >= 5) {
+            busy = true; f.hatched = true; this.save();
+            SFX.fanfare(); confetti(); starsAt(egg);
+            VOICE.say(`Hooray! Baby ${d.say} hatched! Hello Baby! Let's look after Baby together.`);
+            this.selected = "baby"; this.excited = "baby";
+            later(() => { busy = false; this.scene(); }, 1200);
+            later(() => { this.excited = null; this.scene(); }, 5000);
+          } else VOICE.say(cheer[f.taps - 1]);
+        };
+        sc.appendChild(egg);
+      }
+      sc.appendChild(member("mum"));
+      wrap.appendChild(sc);
+
+      // action buttons
+      const acts = document.createElement("div"); acts.className = "actions";
+      const btn = (icon, label, fn, cls = "") => { const b = document.createElement("button"); b.className = "act " + cls; b.innerHTML = `${icon}<small>${label}</small>`; b.onclick = () => { if (busy) return; SFX.tap(); fn(); }; acts.appendChild(b); };
+      btn(FOODS[d.food].emoji, "Feed", () => this.act("food"));
+      btn("🛁", "Bath", () => this.act("clean"));
+      btn("😴", "Sleep", () => this.act("sleep"));
+      btn("⚽", "Play", () => this.act("play"));
+      btn("💕", "Cuddle", () => this.act("cuddle"), "alt");
+      btn("🏡", "Family", () => { this.db.species = null; this.save(); this.picker(); }, "alt");
+      wrap.appendChild(acts);
+      stage.appendChild(wrap);
+
+      if (greet) {
+        if (!f.hatched) prompt(`Mummy ${d.name} has an egg! 🥚`, `Mummy ${d.say} has an egg! Tap the egg to keep it warm.`);
+        else prompt(`The ${d.name} family 🏡`, `Here's the ${d.say} family! Tap a dinosaur, then tap a button to look after them.`);
+        every(() => { if (!busy) this.scene(); }, 20000);
+      }
+    },
+    flyer(text, fromEl, toEl, cls) {
+      const s = stage.getBoundingClientRect(), a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+      const el = document.createElement("span"); el.className = "flyer"; el.textContent = text;
+      el.style.left = (a.left + a.width / 2 - s.left - 20) + "px"; el.style.top = (a.top + a.height / 2 - s.top - 20) + "px";
+      el.style.setProperty("--tx", (b.left + b.width / 2 - a.left - a.width / 2) + "px");
+      el.style.setProperty("--ty", (b.top + b.height / 2 - a.top - a.height / 2) + "px");
+      el.style.animation = cls || "flyto .6s ease-in forwards";
+      stage.appendChild(el); setTimeout(() => el.remove(), 2500);
+    },
+    floaters(toEl, icons, n = 8) {
+      const s = stage.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+      for (let i = 0; i < n; i++) {
+        const el = document.createElement("span"); el.className = "flyer"; el.textContent = icons[i % icons.length];
+        el.style.left = (b.left - s.left + Math.random() * b.width) + "px"; el.style.top = (b.top - s.top + b.height * 0.6) + "px";
+        el.style.animation = `floatup ${1 + Math.random() * 0.8}s ease-out ${i * 0.12}s forwards`;
+        stage.appendChild(el); setTimeout(() => el.remove(), 2500);
+      }
+    },
+    finish(role, speech, delay = 2200) {
+      this.excited = role; this.save(); this.scene();
+      VOICE.say(speech);
+      later(() => { busy = false; this.excited = null; this.scene(); }, delay);
+    },
+    act(kind) {
+      const d = this.species(), f = this.fam(), role = this.selected, m = f.members[role];
+      const label = this.ROLE[role].label;
+      const el = stage.querySelector(`.member.${role}`);
+      if (!el) { VOICE.say("Tap the egg first to help it hatch!"); return; }
+      if (m.sleeping && kind !== "sleep") { VOICE.say(`Shh! ${label} is sleeping.`); return; }
+      busy = true;
+      const btnEl = [...stage.querySelectorAll(".act")][{ food: 0, clean: 1, sleep: 2, play: 3, cuddle: 4 }[kind]];
+      const now = Date.now();
+      const fill = k => { m[k] = 3; m.last[k] = now; };
+      if (kind === "food") {
+        const food = FOODS[d.food];
+        const full = m.food === 3;
+        this.flyer(food.emoji, btnEl, el);
+        later(() => { SFX.munch(); animate(el, "happy"); }, 550);
+        fill("food");
+        later(() => this.finish(role, full ? `${label} is full up! Burp! Excuse me!` : `Yum yum yum! Thank you ${PLAYER}! ${label} loves ${food.name}.`), 900);
+      } else if (kind === "clean") {
+        SFX.splash(); later(() => SFX.bubbles(), 300);
+        this.floaters(el, ["🫧", "💦", "🫧"], 10); animate(el, "wiggle");
+        fill("clean");
+        later(() => this.finish(role, `Splish splash! ${label} is all clean and shiny!`), 1200);
+      } else if (kind === "sleep") {
+        m.sleeping = true; this.save(); this.scene();
+        $("#night").classList.add("on"); SFX.lullaby();
+        starsEl.insertAdjacentHTML("beforeend", `<span class="moon on">🌙</span>`);
+        VOICE.say(`Shh. Night night, ${label}. Sleep tight.`);
+        later(() => {
+          m.sleeping = false; fill("sleep");
+          $("#night").classList.remove("on"); starsEl.innerHTML = "";
+          SFX.twinkle(); starsAt(stage.querySelector(`.member.${role}`) || stage);
+          this.finish(role, `Good morning! ${label} had a lovely sleep. Big stretch!`);
+        }, 6000);
+      } else if (kind === "play") {
+        this.flyer("⚽", btnEl, el, "ballbounce .5s ease-in-out 4");
+        [0, 500, 1000, 1500].forEach(t => later(() => { animate(el, "bounce"); SFX.bounce(); }, t));
+        later(() => SFX.giggle(), 700);
+        fill("play");
+        later(() => this.finish(role, `Wheee! Catch the ball! ${label} loves playing with you, ${PLAYER}!`), 2100);
+      } else if (kind === "cuddle") {
+        SFX.twinkle(); this.floaters(el, ["💕", "💗", "💖"], 9); animate(el, "happy");
+        Object.keys(this.RATE).forEach(k => { m[k] = Math.min(3, m[k] + 1); });
+        later(() => this.finish(role, `Aww! ${label} loves cuddles. I love you, ${PLAYER}!`), 900);
+      }
     }
   };
 

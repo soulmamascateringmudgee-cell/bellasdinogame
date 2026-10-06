@@ -10,7 +10,9 @@
     return ctx;
   }
 
-  function tone({ freq = 440, to = null, type = "sine", dur = 0.2, vol = 0.25, at = 0, attack = 0.01 }) {
+  const _toneRef = { fn: null };
+  function tone(o) { return (_toneRef.fn && _toneRef.fn !== tone ? _toneRef.fn : _tone)(o); }
+  function _tone({ freq = 440, to = null, type = "sine", dur = 0.2, vol = 0.25, at = 0, attack = 0.01 }) {
     const c = ac(); if (!c) return;
     const t = c.currentTime + at;
     const o = c.createOscillator(), g = c.createGain();
@@ -61,6 +63,21 @@
     fanfare() {
       [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone({ freq: f, type: "triangle", dur: 0.28, vol: 0.22, at: i * 0.14 }));
       [262, 330, 392, 523].forEach((f, i) => tone({ freq: f, type: "sine", dur: 0.5, vol: 0.12, at: 0.98 + i * 0.03 }));
+    },
+    splash() { noise({ dur: 0.25, vol: 0.3, cutoff: 1800 }); tone({ freq: 300, to: 900, dur: 0.25, vol: 0.12, at: 0.05 }); },
+    bubbles() { [0, 0.15, 0.28, 0.45, 0.6].forEach((t, i) => tone({ freq: 900 + i * 120, to: 1400 + i * 100, dur: 0.1, vol: 0.12, at: t })); },
+    giggle() { [0, 0.12, 0.24, 0.36].forEach((t, i) => tone({ freq: 800 + i * 60, to: 1100 + i * 60, type: "triangle", dur: 0.1, vol: 0.14, at: t })); },
+    lullaby() { [392, 330, 392, 330, 262].forEach((f, i) => tone({ freq: f, type: "sine", dur: 0.55, vol: 0.14, at: i * 0.5, attack: 0.08 })); },
+    crack() { noise({ dur: 0.06, vol: 0.35, cutoff: 3000 }); tone({ freq: 700, to: 300, type: "triangle", dur: 0.08, vol: 0.12 }); },
+    twinkle() { [1047, 1319, 1568].forEach((f, i) => tone({ freq: f, dur: 0.25, vol: 0.12, at: i * 0.08 })); },
+    bounce() { tone({ freq: 300, to: 600, dur: 0.12, vol: 0.2 }); },
+    // Dino voice with a pitch multiplier: dad low, mum normal, baby high
+    dino(id, pitch = 1) {
+      const map = { trex: "roar", triceratops: "honk", stegosaurus: "stomp", brachiosaurus: "chirp", pterodactyl: "flap", ankylosaurus: "squeak" };
+      const c = ac(); if (!c) return SFX[map[id]]();
+      // temporarily scale frequencies by wrapping tone
+      const orig = _tone; const scaled = o => orig({ ...o, freq: o.freq * pitch, to: o.to ? o.to * pitch : null });
+      _toneRef.fn = scaled; SFX[map[id]](); _toneRef.fn = null;
     },
     count(n) { tone({ freq: 440 * Math.pow(2, (n - 1) / 6), to: 440 * Math.pow(2, (n - 1) / 6) * 1.3, dur: 0.18, vol: 0.22 }); }
   };

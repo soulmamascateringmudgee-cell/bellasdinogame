@@ -3,6 +3,7 @@
 A tap-only dinosaur game for a three-year-old. Runs in any phone or tablet browser, nothing to install.
 
 ## Games
+- **Dino Family** – tamagotchi-style care game. Pick a family, tap the egg until Baby hatches, then feed, bath, nap, play with and cuddle Mummy, Daddy and Baby. Hearts drop slowly over real time (saved on the device), and the dinos show what they need in a thought bubble. Nothing bad ever happens, they just wait patiently.
 - **Meet the Dinos** – tap a dino to hear its name and a fun fact.
 - **Colour Hunt** – "Find the GREEN dinosaur!" (5 rounds).
 - **Count the Eggs** – tap each egg to count out loud, then they hatch (1 to 5).
@@ -26,6 +27,6 @@ Tip: the first tap on "Tap to play!" is what switches the sound and voice on (br
 ## Files
 - `index.html` – screens
 - `style.css` – looks and animations
-- `dinos.js` – the six cartoon dinos, drawn as SVG
+- `dinos.js` – the six cartoon dinos, drawn as SVG, with moods (happy, excited, sleepy, hungry, muddy) and family roles (Mummy bow, Daddy eyebrows, Baby eggshell hat)
 - `sounds.js` – sound effects and the voice
 - `game.js` – the games
