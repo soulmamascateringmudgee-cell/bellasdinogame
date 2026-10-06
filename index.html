@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#8fd3f4">
+<title>Bella's Dino Land</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦕</text></svg>">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Tap-to-start (unlocks sound + voice on iPad) -->
+<section id="screen-start" class="screen active">
+  <div class="start-dino" id="start-dino"></div>
+  <h1>Bella's Dino Land</h1>
+  <button class="big-btn start-btn" id="btn-start">▶ Tap to play!</button>
+</section>
+
+<!-- Home menu -->
+<section id="screen-home" class="screen">
+  <h1 class="home-title">Pick a game!</h1>
+  <div class="menu">
+    <button class="menu-btn" data-game="family" style="--c:#ff7eb6">🏡<span>Dino Family</span></button>
+    <button class="menu-btn" data-game="meet"  style="--c:#5ec36a">🦕<span>Meet the Dinos</span></button>
+    <button class="menu-btn" data-game="colours" style="--c:#ff9f43">🎨<span>Colour Hunt</span></button>
+    <button class="menu-btn" data-game="count" style="--c:#54a0ff">🥚<span>Count the Eggs</span></button>
+    <button class="menu-btn" data-game="feed"  style="--c:#a55eea">🍃<span>Feed Me!</span></button>
+    <button class="menu-btn" data-game="band"  style="--c:#ff6b81">🎵<span>Dino Band</span></button>
+    <button class="menu-btn" data-game="sizes" style="--c:#26c6da">📏<span>Big or Small?</span></button>
+  </div>
+</section>
+
+<!-- Generic game screen -->
+<section id="screen-game" class="screen">
+  <header class="topbar">
+    <button class="round-btn" id="btn-home" aria-label="Home">🏠</button>
+    <div class="prompt" id="prompt"></div>
+    <button class="round-btn" id="btn-repeat" aria-label="Say it again">🔊</button>
+  </header>
+  <main class="stage" id="stage"></main>
+  <div class="night" id="night"></div>
+  <div class="stars" id="stars"></div>
+</section>
+
+<!-- Celebration -->
+<section id="screen-win" class="screen">
+  <div class="win-dino" id="win-dino"></div>
+  <h1>Hooray Bella!</h1>
+  <div class="win-row">
+    <button class="big-btn" id="btn-again">🔁 Again</button>
+    <button class="big-btn alt" id="btn-win-home">🏠 Home</button>
+  </div>
+</section>
+
+<div id="confetti"></div>
+
+<script src="dinos.js"></script>
+<script src="sounds.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
