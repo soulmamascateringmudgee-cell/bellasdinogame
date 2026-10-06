@@ -1,7 +1,7 @@
 /* Bella's Dino Land — game logic. Tap-only, no reading needed, every prompt is spoken. */
 (function () {
   const $ = s => document.querySelector(s);
-  const screens = { start: $("#screen-start"), home: $("#screen-home"), game: $("#screen-game"), win: $("#screen-win"), voice: $("#screen-voice") };
+  const screens = { start: $("#screen-start"), home: $("#screen-home"), game: $("#screen-game"), win: $("#screen-win"), voice: $("#screen-voice"), record: $("#screen-record") };
   const stage = $("#stage"), promptEl = $("#prompt"), starsEl = $("#stars");
   const PLAYER = "Bella";
   let current = null;      // current game id
@@ -19,9 +19,9 @@
     Object.values(screens).forEach(s => s.classList.remove("active"));
     screens[name].classList.add("active");
   }
-  function prompt(html, speech) {
+  function prompt(html, lineIds) {
     promptEl.innerHTML = html;
-    VOICE.say(speech || promptEl.textContent);
+    VOICE.line(lineIds);
   }
   function animate(el, cls) {
     el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls);
@@ -69,7 +69,7 @@
     const wd = pick(DINOS, 1)[0]; $("#win-dino").innerHTML = makeDino(wd.id, wd.colour);
     show("win");
     SFX.fanfare(); confetti();
-    VOICE.say(`Hooray ${PLAYER}! You did it! Clever girl!`);
+    VOICE.line("win");
   }
 
   /* ---------------- Games ---------------- */
@@ -78,14 +78,14 @@
   // 1. Meet the Dinos — tap a dino to hear its name and a fun fact.
   games.meet = {
     start() {
-      prompt("Tap a dinosaur! 🦖", "Tap a dinosaur to say hello!");
+      prompt("Tap a dinosaur! 🦖", "meet_prompt");
       DINOS.forEach(d => {
         const card = dinoCard(d);
         card.insertAdjacentHTML("beforeend", `<div class="label">${d.name}</div>`);
         card.onclick = () => {
           animate(card, "bounce"); starsAt(card);
           SFX[dinoSound[d.id]]();
-          later(() => VOICE.say(`This is ${d.say}! ${d.fact}`), 350);
+          later(() => VOICE.line("meet_" + d.id), 350);
         };
         stage.appendChild(card);
       });
@@ -103,7 +103,7 @@
       const cols = pick(Object.keys(COLOURS), 3);
       const target = cols[0];
       const types = pick(DINOS, 3);
-      prompt(`Find the <span style="color:${COLOURS[target]}">${target.toUpperCase()}</span> dinosaur!`, `Find the ${target} dinosaur!`);
+      prompt(`Find the <span style="color:${COLOURS[target]}">${target.toUpperCase()}</span> dinosaur!`, "colour_" + target);
       shuffle(cols.map((c, i) => ({ c, d: types[i] }))).forEach(({ c, d }) => {
         const card = dinoCard(d, c);
         card.onclick = () => {
@@ -111,11 +111,11 @@
           if (c === target) {
             busy = true;
             animate(card, "happy"); starsAt(card); SFX.yay();
-            VOICE.say(`Yes! ${target}! Well done!`);
+            VOICE.line("yes");
             later(() => { busy = false; this.next(); }, 1800);
           } else {
             animate(card, "wobble"); SFX.oops();
-            VOICE.say(`That one is ${c}. Can you find ${target}?`);
+            VOICE.line(["oops", "colour_" + target]);
           }
         };
         stage.appendChild(card);
@@ -131,7 +131,7 @@
       if (this.round > 5) return win();
       const n = this.round; // 1, 2, 3, 4, 5
       stage.innerHTML = "";
-      prompt("Tap the eggs to count! 🥚", "Tap the eggs to count them!");
+      prompt("Tap the eggs to count! 🥚", "count_prompt");
       const big = document.createElement("div"); big.className = "bignum"; big.textContent = "";
       const row = document.createElement("div"); row.style.cssText = "display:flex;flex-wrap:wrap;gap:14px;justify-content:center;";
       let counted = 0;
@@ -145,13 +145,13 @@
           egg.insertAdjacentHTML("beforeend", `<span class="num">${counted}</span>`);
           SFX.pop(); SFX.count(counted);
           big.textContent = counted;
-          VOICE.say(String(counted));
+          VOICE.line("n" + counted);
           if (counted === n) {
             busy = true;
             later(() => {
               row.querySelectorAll(".egg").forEach(e => { e.firstChild.textContent = "🐣"; animate(e, "happy"); });
               SFX.yay(); starsAt(row);
-              VOICE.say(`${n} ${n === 1 ? "egg" : "eggs"}! ${n} baby ${n === 1 ? "dinosaur" : "dinosaurs"}! Hooray!`);
+              VOICE.line("eggs_" + n);
               later(() => { busy = false; this.next(); }, 3200);
             }, 900);
           }
@@ -170,7 +170,7 @@
       if (!d) return win();
       stage.innerHTML = "";
       const food = FOODS[d.food];
-      prompt(`${d.name} is hungry! ${food.emoji}`, `${d.say} is hungry! ${d.say} eats ${food.name}. Tap the ${food.name}!`);
+      prompt(`${d.name} is hungry! ${food.emoji}`, "feed_" + d.id);
       const wrap = document.createElement("div"); wrap.className = "feed-wrap";
       const card = dinoCard(d, null, "large");
       card.onclick = () => { animate(card, "bounce"); SFX[dinoSound[d.id]](); };
@@ -184,11 +184,11 @@
             busy = true;
             f.classList.add("gone"); SFX.munch();
             later(() => { animate(card, "happy"); starsAt(card); SFX.yay(); }, 500);
-            VOICE.say(`Yum yum yum! Thank you ${PLAYER}!`);
+            VOICE.line("yum");
             later(() => { busy = false; this.next(); }, 2600);
           } else {
             animate(f, "wobble"); SFX.oops();
-            VOICE.say(`Hmm, not ${FOODS[k].name}. ${d.say} eats ${food.name}.`);
+            VOICE.line(["hmm", "feed_" + d.id]);
           }
         };
         row.appendChild(f);
@@ -200,7 +200,7 @@
   // 5. Dino Band — free play, every dino makes its own sound.
   games.band = {
     start() {
-      prompt("Make some music! 🎵", "Tap the dinosaurs to make dino music!");
+      prompt("Make some music! 🎵", "band_prompt");
       DINOS.forEach(d => {
         const card = dinoCard(d);
         card.onclick = () => { animate(card, "bounce"); SFX[dinoSound[d.id]](); };
@@ -219,7 +219,7 @@
       stage.innerHTML = "";
       const want = Math.random() < 0.5 ? "big" : "small";
       const [a, b] = pick(DINOS, 2);
-      prompt(`Which one is <b>${want.toUpperCase()}</b>?`, `Which dinosaur is ${want}? Tap the ${want} one!`);
+      prompt(`Which one is <b>${want.toUpperCase()}</b>?`, "size_" + want);
       const cards = shuffle([{ d: a, size: "large", is: "big" }, { d: b, size: "small", is: "small" }]);
       cards.forEach(({ d, size, is }) => {
         const card = dinoCard(d, null, size);
@@ -228,11 +228,11 @@
           if (is === want) {
             busy = true;
             animate(card, "happy"); starsAt(card); SFX.yay();
-            VOICE.say(`Yes! That ${d.say} is ${want}! Well done!`);
+            VOICE.line("size_yes_" + want);
             later(() => { busy = false; this.next(); }, 2000);
           } else {
             animate(card, "wobble"); SFX.oops();
-            VOICE.say(`That one is ${is}. Can you find the ${want} one?`);
+            VOICE.line("size_no_" + is);
           }
         };
         stage.appendChild(card);
@@ -269,7 +269,7 @@
     },
     picker() {
       stage.innerHTML = "";
-      prompt("Pick your dino family! 🏡", "Which dinosaur family do you want to look after?");
+      prompt("Pick your dino family! 🏡", "fam_pick");
       const grid = document.createElement("div"); grid.className = "fam-pick";
       DINOS.forEach(d => {
         const card = document.createElement("button"); card.className = "dino-card";
@@ -342,12 +342,7 @@
           if (busy) return;
           this.selected = role;
           SFX.dino(d.id, this.ROLE[role].pitch);
-          const lines = {
-            dad: [`Hello ${PLAYER}! I'm Daddy ${d.say}. Rawr!`, `Daddy ${d.say} is here! Stomp, stomp, stomp!`],
-            mum: [`Hello sweetheart! I'm Mummy ${d.say}.`, `Mummy ${d.say} gives the best cuddles!`],
-            baby: [`Hi ${PLAYER}! I'm Baby ${d.say}! Will you play with me?`, `Baby ${d.say} loves you, ${PLAYER}!`]
-          }[role];
-          VOICE.say(mm.sleeping ? `Shh! ${this.ROLE[role].label} is sleeping.` : pick(lines, 1)[0]);
+          VOICE.line(mm.sleeping ? "sleeping" : role + "_" + (Math.random() < 0.5 ? 1 : 2));
           this.scene(); animate(stage.querySelector(`.member.${role}`), "bounce");
         };
         return el;
@@ -362,15 +357,14 @@
           f.taps++; this.save();
           SFX.crack(); animate(egg, "wiggle");
           egg.firstElementChild.outerHTML = this.eggSVG(f.taps);
-          const cheer = ["It's wobbling!", "I can hear a tap, tap, tap!", "Keep it warm!", "Nearly there!"];
           if (f.taps >= 5) {
             busy = true; f.hatched = true; this.save();
             SFX.fanfare(); confetti(); starsAt(egg);
-            VOICE.say(`Hooray! Baby ${d.say} hatched! Hello Baby! Let's look after Baby together.`);
+            VOICE.line("hatched");
             this.selected = "baby"; this.excited = "baby";
             later(() => { busy = false; this.scene(); }, 1200);
             later(() => { this.excited = null; this.scene(); }, 5000);
-          } else VOICE.say(cheer[f.taps - 1]);
+          } else VOICE.line("egg_" + Math.min(f.taps, 4));
         };
         sc.appendChild(egg);
       }
@@ -390,8 +384,8 @@
       stage.appendChild(wrap);
 
       if (greet) {
-        if (!f.hatched) prompt(`Mummy ${d.name} has an egg! 🥚`, `Mummy ${d.say} has an egg! Tap the egg to keep it warm.`);
-        else prompt(`The ${d.name} family 🏡`, `Here's the ${d.say} family! Tap a dinosaur, then tap a button to look after them.`);
+        if (!f.hatched) prompt(`Mummy ${d.name} has an egg! 🥚`, "fam_egg");
+        else prompt(`The ${d.name} family 🏡`, "fam_intro");
         every(() => { if (!busy) this.scene(); }, 20000);
       }
     },
@@ -413,17 +407,17 @@
         stage.appendChild(el); setTimeout(() => el.remove(), 2500);
       }
     },
-    finish(role, speech, delay = 2200) {
+    finish(role, lineId, delay = 2200) {
       this.excited = role; this.save(); this.scene();
-      VOICE.say(speech);
+      VOICE.line(lineId);
       later(() => { busy = false; this.excited = null; this.scene(); }, delay);
     },
     act(kind) {
       const d = this.species(), f = this.fam(), role = this.selected, m = f.members[role];
       const label = this.ROLE[role].label;
       const el = stage.querySelector(`.member.${role}`);
-      if (!el) { VOICE.say("Tap the egg first to help it hatch!"); return; }
-      if (m.sleeping && kind !== "sleep") { VOICE.say(`Shh! ${label} is sleeping.`); return; }
+      if (!el) { VOICE.line("egg_first"); return; }
+      if (m.sleeping && kind !== "sleep") { VOICE.line("sleeping"); return; }
       busy = true;
       const btnEl = [...stage.querySelectorAll(".act")][{ food: 0, clean: 1, sleep: 2, play: 3, cuddle: 4 }[kind]];
       const now = Date.now();
@@ -434,33 +428,33 @@
         this.flyer(food.emoji, btnEl, el);
         later(() => { SFX.munch(); animate(el, "happy"); }, 550);
         fill("food");
-        later(() => this.finish(role, full ? `${label} is full up! Burp! Excuse me!` : `Yum yum yum! Thank you ${PLAYER}! ${label} loves ${food.name}.`), 900);
+        later(() => this.finish(role, full ? "full" : "yum"), 900);
       } else if (kind === "clean") {
         SFX.splash(); later(() => SFX.bubbles(), 300);
         this.floaters(el, ["🫧", "💦", "🫧"], 10); animate(el, "wiggle");
         fill("clean");
-        later(() => this.finish(role, `Splish splash! ${label} is all clean and shiny!`), 1200);
+        later(() => this.finish(role, "bath"), 1200);
       } else if (kind === "sleep") {
         m.sleeping = true; this.save(); this.scene();
         $("#night").classList.add("on"); SFX.lullaby();
         starsEl.insertAdjacentHTML("beforeend", `<span class="moon on">🌙</span>`);
-        VOICE.say(`Shh. Night night, ${label}. Sleep tight.`);
+        VOICE.line("night");
         later(() => {
           m.sleeping = false; fill("sleep");
           $("#night").classList.remove("on"); starsEl.innerHTML = "";
           SFX.twinkle(); starsAt(stage.querySelector(`.member.${role}`) || stage);
-          this.finish(role, `Good morning! ${label} had a lovely sleep. Big stretch!`);
+          this.finish(role, "morning");
         }, 6000);
       } else if (kind === "play") {
         this.flyer("⚽", btnEl, el, "ballbounce .5s ease-in-out 4");
         [0, 500, 1000, 1500].forEach(t => later(() => { animate(el, "bounce"); SFX.bounce(); }, t));
         later(() => SFX.giggle(), 700);
         fill("play");
-        later(() => this.finish(role, `Wheee! Catch the ball! ${label} loves playing with you, ${PLAYER}!`), 2100);
+        later(() => this.finish(role, "play"), 2100);
       } else if (kind === "cuddle") {
         SFX.twinkle(); this.floaters(el, ["💕", "💗", "💖"], 9); animate(el, "happy");
         Object.keys(this.RATE).forEach(k => { m[k] = Math.min(3, m[k] + 1); });
-        later(() => this.finish(role, `Aww! ${label} loves cuddles. I love you, ${PLAYER}!`), 900);
+        later(() => this.finish(role, "cuddle"), 900);
       }
     }
   };
@@ -475,13 +469,13 @@
   function goHome() {
     clearTimers(); busy = false; current = null; VOICE.hush();
     show("home");
-    VOICE.say("Pick a game!");
+    VOICE.line("pick_game");
   }
 
   $("#start-dino").innerHTML = makeDino("trex");
   $("#btn-start").onclick = () => {
     SFX.unlock(); SFX.chirp();
-    VOICE.say(`Hello ${PLAYER}! Let's play with the dinosaurs!`);
+    VOICE.line("hello");
     show("home");
   };
   document.querySelectorAll(".menu-btn").forEach(b => {
@@ -504,6 +498,44 @@
   }
   $("#btn-voice").onclick = () => { SFX.unlock(); show("voice"); renderVoices(); setTimeout(renderVoices, 400); };
   $("#btn-voice-back").onclick = () => { SFX.tap(); show("start"); };
+
+  // Grown-ups: record your own voice for every line
+  let recCurrent = null;
+  function renderRecorder() {
+    const list = $("#rec-list"); list.innerHTML = "";
+    const total = Object.keys(LINES).length, done = VOICE.rec.count();
+    $("#rec-progress").textContent = `${done} of ${total} lines recorded`;
+    $("#rec-toggle").textContent = VOICE.useMine() ? "🔊 Using: my voice" : "🔊 Using: device voice";
+    $("#rec-toggle").classList.toggle("on", VOICE.useMine());
+    if (!VOICE.rec.supported()) { list.innerHTML = '<div class="rec-row">This browser can\'t record audio. Try Safari on the iPad or Chrome on Android.</div>'; return; }
+    LINE_GROUPS.forEach(g => {
+      list.insertAdjacentHTML("beforeend", `<h3 class="rec-group">${g.title}</h3>`);
+      g.ids.forEach(id => {
+        const row = document.createElement("div");
+        const has = VOICE.rec.has(id), isRec = recCurrent === id;
+        row.className = "rec-row" + (has ? " has" : "") + (isRec ? " rec" : "");
+        row.innerHTML = `<div class="rec-text">${has ? "✅ " : ""}${LINES[id]}</div>
+          <button class="rec-btn ${isRec ? "stop" : "go"}" data-id="${id}">${isRec ? "■ Stop" : has ? "● Again" : "● Record"}</button>
+          <button class="rec-btn play" data-id="${id}" ${has ? "" : "disabled"}>▶</button>`;
+        row.querySelector(".rec-btn.go, .rec-btn.stop").onclick = async e => {
+          const b = e.currentTarget;
+          if (VOICE.rec.recording()) {
+            await VOICE.rec.stop(); recCurrent = null; SFX.tap(); renderRecorder();
+          } else {
+            try { await VOICE.rec.start(id); recCurrent = id; renderRecorder(); }
+            catch (err) { alert("Microphone not allowed. Check Safari's microphone permission for this site."); }
+          }
+        };
+        row.querySelector(".rec-btn.play").onclick = () => VOICE.rec.play(id);
+        list.appendChild(row);
+      });
+    });
+    const cur = list.querySelector(".rec-row.rec"); if (cur) cur.scrollIntoView({ block: "center" });
+  }
+  $("#btn-record").onclick = () => { SFX.unlock(); show("record"); renderRecorder(); };
+  $("#rec-toggle").onclick = () => { VOICE.setUseMine(!VOICE.useMine()); renderRecorder(); };
+  $("#rec-clear").onclick = () => { if (confirm("Delete all your recordings?")) { VOICE.rec.clear(); renderRecorder(); } };
+  $("#btn-record-back").onclick = async () => { if (VOICE.rec.recording()) await VOICE.rec.stop(); VOICE.rec.release(); recCurrent = null; SFX.tap(); show("voice"); };
   $("#btn-repeat").onclick = () => { SFX.tap(); VOICE.repeat(); };
   $("#btn-again").onclick = () => { SFX.tap(); startGame(current); };
   $("#btn-win-home").onclick = () => { SFX.tap(); goHome(); };

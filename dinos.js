@@ -36,9 +36,12 @@
     P("M72 150 Q100 158 128 150", "none", 'stroke="rgba(0,0,0,.08)" stroke-width="4" fill="none" stroke-linecap="round"'),
     P("M76 166 Q100 173 124 166", "none", 'stroke="rgba(0,0,0,.08)" stroke-width="4" fill="none" stroke-linecap="round"')
   ];
-  const headShadow = () => E(100, 112, 42, 10, "#000", 'opacity=".16"');
+  const headShadow = () => E(100, 114, 44, 11, "#000", 'opacity=".22" filter="url(#blur)"');
   const head = (cy = 70, rx = 56, ry = 50) => E(100, cy, rx, ry, "body");
-  const headShine = (cy = 70) => E(76, cy - 30, 18, 9, "#fff", 'opacity=".32" transform="rotate(-25 76 ' + (cy - 30) + ')"');
+  const headShine = (cy = 70) => E(74, cy - 30, 22, 11, "#fff", 'opacity=".4" filter="url(#blur)" transform="rotate(-25 74 ' + (cy - 30) + ')"');
+  const bodyShade = () => E(100, 184, 50, 12, "#000", 'opacity=".16" filter="url(#blur)"');
+  const rim = () => P("M150 120 C 162 140, 160 170, 140 184", "none", 'stroke="rgba(255,255,255,.35)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#blur)"');
+  const spots = (cy = 70) => [E(68, cy - 36, 7, 5, "#fff", 'opacity=".22"'), E(84, cy - 44, 5, 3.5, "#fff", 'opacity=".22"'), E(128, cy - 40, 6, 4, "#fff", 'opacity=".18"'), E(44, 140, 6, 4, "dark", 'opacity=".35"'), E(156, 150, 5, 3.5, "dark", 'opacity=".35"'), E(150, 132, 4, 3, "dark", 'opacity=".3"')];
   const muzzle = (cy = 70) => [E(100, cy + 22, 27, 15, "light"), C(91, cy + 19, 2.5, "dark"), C(109, cy + 19, 2.5, "dark")];
   const groundShadow = () => E(100, 192, 58, 6, "#000", 'opacity=".14"');
 
@@ -55,7 +58,7 @@
         P("M58 126 C 46 130, 44 142, 56 146 L 62 140 L 58 136 Z", "mid"), P("M142 126 C 154 130, 156 142, 144 146 L 138 140 L 142 136 Z", "mid"),
         head()
       ],
-      det: [belly(), ...bellyLines(), C(62, 170, 6, "mid"), C(140, 172, 5, "mid"), C(52, 150, 4, "mid"), headShadow(), headShine(), ...muzzle()],
+      det: [belly(), ...bellyLines(), bodyShade(), headShadow(), headShine(), ...spots(), ...muzzle()],
       face: { cx: 100, cy: 70, s: 1 }, top: { x: 100, y: 20 }, neck: { x: 100, y: 110 }, body: { x: 100, y: 150 }
     }),
     triceratops: () => ({
@@ -69,7 +72,7 @@
         head(),
         P("M66 44 L 56 10 L 84 30 Z", "cream"), P("M134 44 L 144 10 L 116 30 Z", "cream"), P("M92 86 L 100 68 L 108 86 Z", "cream")
       ],
-      det: [belly(), ...bellyLines(), headShadow(), E(100, 66, 56, 56, "mid"), head(), headShine(), ...muzzle(), P("M92 86 L 100 68 L 108 86 Z", "cream")],
+      det: [belly(), ...bellyLines(), bodyShade(), headShadow(), E(100, 66, 56, 56, "mid"), head(), headShine(), ...spots(), ...muzzle(), P("M92 86 L 100 68 L 108 86 Z", "cream")],
       face: { cx: 100, cy: 70, s: 1 }, top: { x: 100, y: 22 }, neck: { x: 100, y: 112 }, body: { x: 100, y: 150 }
     }),
     stegosaurus: () => ({
@@ -83,7 +86,7 @@
       det: [
         ...[[40, 62, -40], [66, 32, -20], [100, 18, 0], [134, 32, 20], [160, 62, 40]].map(([x, y, rot]) =>
           P(`M${x - 9} ${y + 16} Q ${x - 7} ${y - 4}, ${x} ${y - 12} Q ${x + 7} ${y - 4}, ${x + 9} ${y + 16} Z`, "mid", `transform="rotate(${rot} ${x} ${y})"`)),
-        head(), belly(), ...bellyLines(), headShadow(), headShine(), ...muzzle(), C(58, 150, 5, "mid"), C(146, 158, 6, "mid"), C(64, 176, 4, "mid")
+        head(), belly(), ...bellyLines(), bodyShade(), headShadow(), headShine(), ...spots(), ...muzzle()
       ],
       face: { cx: 100, cy: 70, s: 1 }, top: { x: 100, y: 20 }, neck: { x: 100, y: 112 }, body: { x: 100, y: 150 }
     }),
@@ -97,9 +100,9 @@
       ],
       det: [
         P("M100 124 C 128 124, 140 146, 138 162 C 136 178, 120 184, 100 184 C 80 184, 64 178, 62 162 C 60 146, 72 124, 100 124 Z", "light"),
-        ...bellyLines(), R(86, 60, 28, 54, 14, "light", 'opacity=".6"'),
-        E(100, 118, 34, 8, "#000", 'opacity=".14"'),
-        E(100, 42, 42, 36, "body"), headShine(44), C(70, 60, 5, "mid"), C(132, 52, 4, "mid"), C(84, 20, 4, "mid"),
+        ...bellyLines(), bodyShade(), R(86, 60, 28, 54, 14, "light", 'opacity=".6"'),
+        E(100, 120, 36, 9, "#000", 'opacity=".2" filter="url(#blur)"'),
+        E(100, 42, 42, 36, "body"), headShine(44), E(72, 36, 5, 3.5, "#fff", 'opacity=".22"'), E(84, 16, 4, 3, "#fff", 'opacity=".2"'), E(44, 140, 6, 4, "dark", 'opacity=".35"'), E(156, 150, 5, 3.5, "dark", 'opacity=".35"'),
         E(100, 60, 22, 12, "light"), C(93, 57, 2.2, "dark"), C(107, 57, 2.2, "dark")
       ],
       face: { cx: 100, cy: 42, s: 0.74 }, top: { x: 100, y: 7 }, neck: { x: 100, y: 118 }, body: { x: 100, y: 156 }
@@ -118,8 +121,9 @@
       det: [
         P("M60 116 C 46 100, 28 80, 14 66 C 20 90, 18 108, 24 126 C 36 120, 48 124, 60 134 Z", "mid"),
         P("M140 116 C 154 100, 172 80, 186 66 C 180 90, 182 108, 176 126 C 164 120, 152 124, 140 134 Z", "mid"),
-        belly(), ...bellyLines(), headShadow(), headShine(),
+        belly(), ...bellyLines(), bodyShade(), headShadow(), headShine(), ...spots(),
         P("M78 90 L 122 90 C 124 110, 108 124, 100 126 C 92 124, 76 110, 78 90 Z", "beak"),
+        P("M82 92 L 118 92 C 118 100, 110 104, 100 104 C 90 104, 82 100, 82 92 Z", "#fff", 'opacity=".25"'),
         P("M84 98 Q100 108 116 98", "none", 'stroke="#b8862b" stroke-width="3" fill="none" stroke-linecap="round"'),
         C(92, 94, 2, "#b8862b"), C(108, 94, 2, "#b8862b")
       ],
@@ -137,10 +141,10 @@
         P("M50 62 l-12 -6 l8 12 Z", "cream"), P("M150 62 l12 -6 l-8 12 Z", "cream")
       ],
       det: [
-        belly(), ...bellyLines(), headShadow(), head(),
+        belly(), ...bellyLines(), bodyShade(), headShadow(), head(),
         P("M48 66 C 50 36, 150 36, 152 66 Z", "mid"),
         ...[[58, 56], [74, 44], [90, 38], [110, 38], [126, 44], [142, 56]].map(([x, y]) => C(x, y, 7, "dark")),
-        headShine(), ...muzzle(), C(28, 134, 4, "mid"), C(16, 142, 3, "mid")
+        headShine(), ...spots(), ...muzzle(), C(28, 134, 4, "mid"), C(16, 142, 3, "mid")
       ],
       face: { cx: 100, cy: 72, s: 1 }, top: { x: 100, y: 22 }, neck: { x: 100, y: 112 }, body: { x: 100, y: 150 }
     })
@@ -178,40 +182,54 @@
     return "";
   }
 
-  /* ---------- Face ---------- */
-  function face(f, mood, role, pal) {
+  /* ---------- Face (Pixar-style: oval eyes, coloured iris, eyelids, brows) ---------- */
+  const IRIS = { trex: "#e39b2e", triceratops: "#2bb5a8", stegosaurus: "#f0b429", brachiosaurus: "#8a5a2b", pterodactyl: "#3a7bd5", ankylosaurus: "#4cae4f" };
+  function face(f, mood, role, pal, type, id) {
     const ink = pal.outline;
     const big = role === "baby" ? 1.22 : 1;
     const s = f.s;
-    const r = 14 * big;
+    const rx = 14.5 * big, ry = 16.5 * big;
     const eyes = [[-23, 0], [23, 0]];
-    let out = "";
-    out += `<ellipse cx="-38" cy="18" rx="9" ry="5.5" fill="#ff7b9c" opacity=".55"/><ellipse cx="38" cy="18" rx="9" ry="5.5" fill="#ff7b9c" opacity=".55"/>`;
+    const iris = IRIS[type] || "#8a5a2b";
+    let out = `<defs><radialGradient id="${id}i" cx="50%" cy="70%" r="60%"><stop offset="0" stop-color="${mix(iris, "#ffffff", 0.45)}"/><stop offset="1" stop-color="${shade(iris, -40)}"/></radialGradient></defs>`;
+    out += `<ellipse cx="-40" cy="20" rx="10" ry="6" fill="#ff7b9c" opacity=".5" filter="url(#blur)"/><ellipse cx="40" cy="20" rx="10" ry="6" fill="#ff7b9c" opacity=".5" filter="url(#blur)"/>`;
+    const browW = role === "dad" ? 5.5 : 3.2;
+    const browY = mood === "excited" ? -31 : mood === "hungry" ? -26 : -27;
+    const browTilt = mood === "hungry" ? 6 : 0;   // inner ends up = hopeful
     if (mood === "sleepy") {
-      eyes.forEach(([x, y]) => { out += `<path d="M${x - r} ${y + 3} q${r} ${r * 0.85} ${r * 2} 0" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>`; });
-      if (role === "mum") eyes.forEach(([x, y]) => { out += `<path d="M${x - r * 0.9} ${y + 4} l-4 4 M${x - r * 0.4} ${y + 9} l-2 5 M${x + r * 0.4} ${y + 9} l2 5 M${x + r * 0.9} ${y + 4} l4 4" stroke="${ink}" stroke-width="2.5" stroke-linecap="round"/>`; });
+      eyes.forEach(([x, y]) => {
+        out += `<path d="M${x - rx} ${y + 2} q${rx} ${ry * 0.8} ${rx * 2} 0" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+        if (role === "mum") out += `<path d="M${x - rx * 0.9} ${y + 4} l-4 4 M${x - rx * 0.35} ${y + 9} l-2 5 M${x + rx * 0.35} ${y + 9} l2 5 M${x + rx * 0.9} ${y + 4} l4 4" stroke="${ink}" stroke-width="2.5" stroke-linecap="round"/>`;
+      });
+      out += `<path d="M-36 -22 q13 -3 26 0 M10 -22 q13 -3 26 0" stroke="${ink}" stroke-width="${browW}" stroke-linecap="round" fill="none" opacity=".8"/>`;
       out += `<g font-family="Arial Rounded MT Bold, Nunito, Arial, sans-serif" font-weight="900" fill="#fff" stroke="${ink}" stroke-width="1.2">
         <text x="42" y="-22" font-size="15">z</text><text x="54" y="-36" font-size="20">Z</text><text x="66" y="-52" font-size="25">Z</text></g>`;
     } else {
-      const grow = mood === "excited" ? 1.1 : 1;
+      const grow = mood === "excited" ? 1.08 : 1;
       eyes.forEach(([x, y]) => {
-        const rr = r * grow;
-        out += `<circle cx="${x}" cy="${y}" r="${rr}" fill="#fff" stroke="${ink}" stroke-width="2.5"/>
-          <circle cx="${x + (x < 0 ? 2 : -2)}" cy="${y + 1.5}" r="${rr * 0.62}" fill="${ink}"/>
-          <circle cx="${x + (x < 0 ? 2 : -2) + rr * 0.22}" cy="${y - rr * 0.3}" r="${rr * 0.24}" fill="#fff"/>
-          <circle cx="${x + (x < 0 ? 2 : -2) - rr * 0.18}" cy="${y + rr * 0.32}" r="${rr * 0.1}" fill="#fff"/>`;
-        if (mood === "hungry") out += `<path d="M${x - rr} ${y - rr * 0.1} a${rr} ${rr} 0 0 1 ${rr * 2} 0 L${x + rr} ${y - rr * 1.2} L${x - rr} ${y - rr * 1.2} Z" fill="${pal.body}" /><path d="M${x - rr} ${y - rr * 0.1} a${rr} ${rr} 0 0 1 ${rr * 2} 0" stroke="${ink}" stroke-width="2.5" fill="none"/>`;
-        if (role === "mum") out += `<path d="M${x - rr * 0.95} ${y - rr * 0.5} l-5 -3 M${x - rr * 0.55} ${y - rr * 0.95} l-3 -5 M${x + rr * 0.2} ${y - rr * 1.05} l1 -6" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
+        const ex = rx * grow, ey = ry * grow, dir = x < 0 ? 1 : -1;
+        const ix = x + dir * 2.5, iy = y + 2;
+        out += `<ellipse cx="${x}" cy="${y}" rx="${ex}" ry="${ey}" fill="#fff" stroke="${ink}" stroke-width="2.5"/>
+          <circle cx="${ix}" cy="${iy}" r="${ex * 0.68}" fill="url(#${id}i)"/>
+          <circle cx="${ix}" cy="${iy}" r="${ex * 0.68}" fill="none" stroke="${shade(iris, -60)}" stroke-width="1"/>
+          <circle cx="${ix}" cy="${iy + 1}" r="${ex * 0.36}" fill="${ink}"/>
+          <circle cx="${ix - ex * 0.22}" cy="${iy - ey * 0.28}" r="${ex * 0.22}" fill="#fff"/>
+          <circle cx="${ix + ex * 0.22}" cy="${iy + ey * 0.26}" r="${ex * 0.09}" fill="#fff"/>`;
+        // upper eyelid: relaxed, friendly
+        const lid = mood === "excited" ? 0.08 : mood === "hungry" ? 0.42 : 0.22;
+        out += `<path d="M${x - ex} ${y - ey * (1 - lid)} A${ex} ${ey} 0 0 1 ${x + ex} ${y - ey * (1 - lid)} L${x + ex} ${y - ey - 3} L${x - ex} ${y - ey - 3} Z" fill="${pal.body}"/>
+          <path d="M${x - ex} ${y - ey * (1 - lid)} A${ex} ${ey} 0 0 1 ${x + ex} ${y - ey * (1 - lid)}" stroke="${ink}" stroke-width="2.8" fill="none" stroke-linecap="round"/>`;
+        if (role === "mum") out += `<path d="M${x - ex * 0.95} ${y - ey * 0.55} l-5 -3 M${x - ex * 0.5} ${y - ey * 0.9} l-3 -5 M${x + ex * 0.15} ${y - ey * 1.0} l1 -6" stroke="${ink}" stroke-width="2.6" stroke-linecap="round"/>`;
       });
-      if (role === "dad") out += `<path d="M-36 -22 q13 -6 26 -1 M10 -23 q13 -5 26 1" stroke="${ink}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
-      if (role === "baby") out += `<g fill="${ink}" opacity=".35"><circle cx="-34" cy="12" r="1.6"/><circle cx="-28" cy="15" r="1.6"/><circle cx="34" cy="12" r="1.6"/><circle cx="28" cy="15" r="1.6"/></g>`;
+      out += `<path d="M-36 ${browY + browTilt} q13 -6 26 ${-browTilt - 1} M10 ${browY - 1} q13 ${browTilt - 5} 26 ${browTilt + 1}" stroke="${ink}" stroke-width="${browW}" stroke-linecap="round" fill="none"/>`;
+      if (role === "baby") out += `<g fill="${ink}" opacity=".35"><circle cx="-36" cy="12" r="1.6"/><circle cx="-30" cy="16" r="1.6"/><circle cx="36" cy="12" r="1.6"/><circle cx="30" cy="16" r="1.6"/></g>`;
     }
     if (f.mouth !== false) {
       const my = 32;
-      if (mood === "excited") out += `<path d="M-13 ${my - 2} q13 22 26 0 z" fill="${ink}"/><path d="M-6 ${my + 7} q6 7 12 0 z" fill="#ff7b9c"/>`;
-      else if (mood === "hungry") out += `<ellipse cx="0" cy="${my + 4}" rx="5.5" ry="7" fill="${ink}"/>`;
+      if (mood === "excited") out += `<path d="M-14 ${my - 2} q14 24 28 0 z" fill="${ink}"/><path d="M-7 ${my + 8} q7 8 14 0 z" fill="#ff7b9c"/><path d="M-11 ${my - 1} q11 3 22 0 l0 3 q-11 2 -22 0 z" fill="#fff"/>`;
+      else if (mood === "hungry") out += `<ellipse cx="0" cy="${my + 4}" rx="6" ry="7.5" fill="${ink}"/><ellipse cx="0" cy="${my + 7}" rx="3.5" ry="3" fill="#ff7b9c"/>`;
       else if (mood === "sleepy") out += `<circle cx="0" cy="${my + 4}" r="3.5" fill="${ink}"/>`;
-      else out += `<path d="M-12 ${my - 2} q12 13 24 0" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+      else out += `<path d="M-13 ${my - 2} q13 14 26 0" stroke="${ink}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
     }
     return `<g transform="translate(${f.cx} ${f.cy}) scale(${s})">${out}</g>`;
   }
@@ -266,13 +284,14 @@
       cream: "#fff6d5", beak: "#ffc83d", outline: mix(shade(hex, -110), "#2a1e3a", 0.5)
     };
     const defs = `<defs><radialGradient id="${id}" cx="38%" cy="28%" r="85%">
-      <stop offset="0" stop-color="${mix(hex, "#ffffff", 0.3)}"/><stop offset=".5" stop-color="${hex}"/><stop offset="1" stop-color="${shade(hex, -28)}"/></radialGradient></defs>`;
+      <stop offset="0" stop-color="${mix(hex, "#ffffff", 0.32)}"/><stop offset=".5" stop-color="${hex}"/><stop offset="1" stop-color="${shade(hex, -34)}"/></radialGradient>
+      <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter></defs>`;
     const pre = g.pre.map(s => render(s, pal, false)).join("");
     const outline = g.sil.map(s => render(s, pal, true)).join("");
     const colour = g.sil.map(s => render(s, pal, false)).join("");
     const details = g.det.map(s => render(s, pal, false)).join("");
     const faceMood = mood === "dirty" ? "happy" : mood;
     const extras = ((mood === "dirty" || opts.mud) ? mud(g.body) : "") + accessory(role, g, pal);
-    return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${pre}${outline}${colour}${details}${face(g.face, faceMood, role, pal)}${extras}</svg>`;
+    return `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${defs}${pre}${outline}${colour}${details}${face(g.face, faceMood, role, pal, type, id)}${extras}</svg>`;
   };
 })();

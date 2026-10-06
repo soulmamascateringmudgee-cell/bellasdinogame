@@ -24,7 +24,10 @@ A tap-only dinosaur game for a three-year-old. Runs in any phone or tablet brows
 
 Tip: the first tap on "Tap to play!" is what switches the sound and voice on (browsers require a tap first).
 
-## Making the voice sound natural
+## Use your own voice (recommended)
+Start screen → **Voice** → **Record my voice**. Tap Record, read the line, tap Stop. There are 67 short lines (about 10 minutes). Lines you skip fall back to the device voice. Recordings are saved on that device only (in the browser), so record on the iPad Bella uses. Safari will ask for microphone permission once.
+
+## Making the device voice sound natural
 The game uses the voices built into the device. The default ones can sound robotic.
 - **iPad / iPhone:** Settings → Accessibility → Spoken Content → Voices → English → Australian → Karen → download **Enhanced** (or **Premium**). Reopen the game, then tap the small **Voice** button on the start screen and pick the starred voice.
 - **Android / Chrome:** the Google voices are picked automatically. The **Voice** button lets you choose another.
@@ -34,5 +37,7 @@ The game uses the voices built into the device. The default ones can sound robot
 - `index.html` – screens
 - `style.css` – looks and animations
 - `dinos.js` – the six cartoon dinos, drawn as SVG, with moods (happy, excited, sleepy, hungry, muddy) and family roles (Mummy bow, Daddy eyebrows, Baby eggshell hat)
-- `sounds.js` – sound effects and the voice
+- `sounds.js` – sound effects
+- `lines.js` – every line the game says
+- `voice.js` – plays recorded clips, falls back to text-to-speech, and handles recording
 - `game.js` – the games

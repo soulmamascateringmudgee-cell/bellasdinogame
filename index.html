@@ -26,7 +26,23 @@
   <p class="voice-help">Tap a voice to hear it. Starred voices sound most natural.<br>
   <b>iPad/iPhone tip:</b> download a better one in Settings → Accessibility → Spoken Content → Voices → English → Australian → Karen → <b>Enhanced</b> or <b>Premium</b>, then reopen the game.</p>
   <div class="voice-list" id="voice-list"></div>
-  <button class="big-btn alt" id="btn-voice-back">✅ Done</button>
+  <div class="win-row">
+    <button class="big-btn" id="btn-record">🎤 Record my voice</button>
+    <button class="big-btn alt" id="btn-voice-back">✅ Done</button>
+  </div>
+</section>
+
+<!-- Grown-ups: record every line in your own voice -->
+<section id="screen-record" class="screen">
+  <h1>Record my voice</h1>
+  <p class="voice-help">Tap <b>● Record</b>, read the line out loud in your best dino-mummy voice, tap <b>■ Stop</b>. Tap ▶ to check it. Lines you skip use the device voice. Recordings stay on this device only.</p>
+  <div class="rec-bar">
+    <span id="rec-progress"></span>
+    <button class="rec-btn toggle" id="rec-toggle"></button>
+    <button class="rec-btn danger" id="rec-clear">🗑 Delete all</button>
+  </div>
+  <div class="voice-list rec-list" id="rec-list"></div>
+  <button class="big-btn alt" id="btn-record-back">✅ Done</button>
 </section>
 
 <!-- Home menu -->
@@ -69,6 +85,8 @@
 
 <script src="dinos.js"></script>
 <script src="sounds.js"></script>
+<script src="lines.js"></script>
+<script src="voice.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
