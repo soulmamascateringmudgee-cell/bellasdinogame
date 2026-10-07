@@ -3,6 +3,20 @@
   const { games, prompt, later, animate, starsAt, win, pick, shuffle, stage, isBusy, setBusy } = G;
   const busy = isBusy;
 
+  // Size a cols×rows grid of square cells to fit the visible stage (Safari's 100vh lies, so measure instead).
+  function fitGrid(grid, cols, rows, gap = 8) {
+    const fit = () => {
+      if (!grid.isConnected) { window.removeEventListener("resize", fit); return; }
+      const w = stage.clientWidth - 4, h = stage.clientHeight - 8;
+      const cell = Math.floor(Math.min((w - gap * (cols - 1)) / cols, (h - gap * (rows - 1)) / rows));
+      grid.style.gridTemplateColumns = `repeat(${cols}, ${cell}px)`;
+      grid.style.gridAutoRows = cell + "px";
+      grid.style.width = (cell * cols + gap * (cols - 1)) + "px";
+      grid.style.gap = gap + "px";
+    };
+    fit(); window.addEventListener("resize", fit); setTimeout(fit, 250);
+  }
+
   /* ---------- 1. Dino Match (memory pairs) ---------- */
   games.match = {
     levels: [3, 4, 6],
@@ -15,9 +29,10 @@
       const dinos = pick(DINOS, pairs);
       const cards = shuffle([...dinos, ...dinos]);
       const grid = document.createElement("div"); grid.className = "mgrid";
-      const cols = pairs <= 3 ? 3 : 4;
-      grid.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-      grid.style.width = cols === 3 ? "min(96vw, 80vmin)" : "min(96vw, 100vmin)";
+      const portrait = stage.clientHeight > stage.clientWidth;
+      const n = pairs * 2;
+      const cols = n === 6 ? 3 : (portrait ? 3 : 4);
+      const rows = Math.ceil(n / cols);
       let first = null, matched = 0;
       cards.forEach(d => {
         const c = document.createElement("button"); c.className = "mcard"; c.dataset.id = d.id;
@@ -41,7 +56,7 @@
         };
         grid.appendChild(c);
       });
-      stage.appendChild(grid);
+      stage.appendChild(grid); fitGrid(grid, cols, rows, 10);
     }
   };
 
@@ -230,7 +245,10 @@
         };
         cells.push(c); grid.appendChild(c);
       }
-      stage.appendChild(grid); hint();
+      stage.appendChild(grid);
+      const portrait = stage.clientHeight > stage.clientWidth;
+      fitGrid(grid, portrait ? 5 : 6, portrait ? 6 : 5, 8);
+      hint();
     }
   };
 })();
