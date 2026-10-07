@@ -459,6 +459,10 @@
     }
   };
 
+  // Hooks for extra games in games2.js
+  window.G = { games, prompt, later, every, animate, starsAt, confetti, win, dinoCard, pick, shuffle, stage, show,
+    isBusy: () => busy, setBusy: v => { busy = v; }, PLAYER };
+
   /* ---------------- Navigation ---------------- */
   function startGame(id) {
     clearTimers(); busy = false; current = id;

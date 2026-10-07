@@ -80,6 +80,50 @@
     cuddle: "Aww! I love you, Bella!"
   });
 
+  group("Dino Match", {
+    match_prompt: "Find two dinosaurs that are the same!",
+    match_yes: "It's a match!",
+    match_no: "Not the same. Try again!"
+  });
+  group("Dino Puzzle", {
+    puzzle_prompt: "Put the pieces together to make the dinosaur! Tap a piece, then tap where it goes.",
+    puzzle_done: "You did it! Look at the dinosaur!"
+  });
+  group("Spot the Difference", {
+    spot_prompt: "Look carefully! Something is different in the second picture. Can you find it?",
+    spot_yes: "You found it!",
+    spot_more: "There's another one! Keep looking!",
+    spot_no: "Hmm, that one is the same. Look again!"
+  });
+  group("Alphabet", {
+    abc_prompt: "Let's find letters!",
+    letter_A: "Find the letter A! A is for Ankylosaurus!", letter_B: "Find the letter B! B is for Brachiosaurus!",
+    letter_C: "Find the letter C! C is for cake!", letter_D: "Find the letter D! D is for dinosaur!",
+    letter_E: "Find the letter E! E is for egg!", letter_F: "Find the letter F! F is for fish!",
+    letter_G: "Find the letter G! G is for grapes!", letter_H: "Find the letter H! H is for hat!",
+    letter_I: "Find the letter I! I is for ice cream!", letter_J: "Find the letter J! J is for jelly!",
+    letter_K: "Find the letter K! K is for kite!", letter_L: "Find the letter L! L is for lion!",
+    letter_M: "Find the letter M! M is for moon!", letter_N: "Find the letter N! N is for nest!",
+    letter_O: "Find the letter O! O is for octopus!", letter_P: "Find the letter P! P is for Pterodactyl!",
+    letter_Q: "Find the letter Q! Q is for queen!", letter_R: "Find the letter R! R is for rainbow!",
+    letter_S: "Find the letter S! S is for Stegosaurus!", letter_T: "Find the letter T! T is for T-Rex!",
+    letter_U: "Find the letter U! U is for umbrella!", letter_V: "Find the letter V! V is for volcano!",
+    letter_W: "Find the letter W! W is for whale!", letter_X: "Find the letter X! X is for xylophone!",
+    letter_Y: "Find the letter Y! Y is for yo-yo!", letter_Z: "Find the letter Z! Z is for zebra!"
+  });
+  group("Count to 30", {
+    c30_prompt: "Let's count to thirty! Tap the numbers in order. Tap one first!",
+    n6: "Six!", n7: "Seven!", n8: "Eight!", n9: "Nine!", n10: "Ten!",
+    n11: "Eleven!", n12: "Twelve!", n13: "Thirteen!", n14: "Fourteen!", n15: "Fifteen!",
+    n16: "Sixteen!", n17: "Seventeen!", n18: "Eighteen!", n19: "Nineteen!", n20: "Twenty!",
+    n21: "Twenty-one!", n22: "Twenty-two!", n23: "Twenty-three!", n24: "Twenty-four!", n25: "Twenty-five!",
+    n26: "Twenty-six!", n27: "Twenty-seven!", n28: "Twenty-eight!", n29: "Twenty-nine!", n30: "Thirty!",
+    c30_ten: "Ten! Keep going!",
+    c30_twenty: "Twenty! Nearly there!",
+    c30_done: "Thirty! You counted all the way to thirty! Amazing!",
+    c30_no: "Oops, not that one. What comes next?"
+  });
+
   window.LINES = L;
   window.LINE_GROUPS = G;
 })();
