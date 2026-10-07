@@ -33,7 +33,6 @@
   });
   group("Count the Eggs", {
     count_prompt: "Tap the eggs to count them!",
-    n1: "One!", n2: "Two!", n3: "Three!", n4: "Four!", n5: "Five!",
     eggs_1: "One egg! One baby dinosaur! Hooray!",
     eggs_2: "Two eggs! Two baby dinosaurs! Hooray!",
     eggs_3: "Three eggs! Three baby dinosaurs! Hooray!",
@@ -111,8 +110,9 @@
     letter_W: "Find the letter W! W is for whale!", letter_X: "Find the letter X! X is for xylophone!",
     letter_Y: "Find the letter Y! Y is for yo-yo!", letter_Z: "Find the letter Z! Z is for zebra!"
   });
-  group("Count to 30", {
+  group("Numbers 1 to 30 (Count the Eggs and Count to 30)", {
     c30_prompt: "Let's count to thirty! Tap the numbers in order. Tap one first!",
+    n1: "One!", n2: "Two!", n3: "Three!", n4: "Four!", n5: "Five!",
     n6: "Six!", n7: "Seven!", n8: "Eight!", n9: "Nine!", n10: "Ten!",
     n11: "Eleven!", n12: "Twelve!", n13: "Thirteen!", n14: "Fourteen!", n15: "Fifteen!",
     n16: "Sixteen!", n17: "Seventeen!", n18: "Eighteen!", n19: "Nineteen!", n20: "Twenty!",

@@ -74,7 +74,7 @@ h1 { font-size: clamp(32px, 7vw, 64px); margin: 0; text-shadow: 0 4px 0 rgba(0,0
 }
 .stage {
   flex: 1; width: 100%; display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
-  gap: 14px; align-content: center; position: relative;
+  gap: 14px; align-content: center; position: relative; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 
 /* Dino cards */
@@ -264,8 +264,8 @@ h1 { font-size: clamp(32px, 7vw, 64px); margin: 0; text-shadow: 0 4px 0 rgba(0,0
 .menu-btn { position: relative; }
 
 /* ---------- Dino Match ---------- */
-.mgrid { display: grid; gap: 10px; width: min(96vw, 110vmin); justify-content: center; }
-.mcard { aspect-ratio: 1; background: #fff; border-radius: 20px; box-shadow: 0 6px 0 rgba(0,0,0,.12); position: relative; overflow: hidden; transition: transform .15s; }
+.mgrid { display: grid; gap: 10px; justify-content: center; }
+.mcard { background: #fff; border-radius: 20px; box-shadow: 0 6px 0 rgba(0,0,0,.12); position: relative; overflow: hidden; transition: transform .15s; }
 .mcard .front, .mcard .back { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .mcard .back { background: linear-gradient(#fff6d5, #ffe9a8); font-size: 10vmin; }
 .mcard .front { opacity: 0; transform: scale(.6); transition: all .2s; padding: 6px; }
@@ -312,9 +312,8 @@ h1 { font-size: clamp(32px, 7vw, 64px); margin: 0; text-shadow: 0 4px 0 rgba(0,0
 .abc-word .big { font-size: clamp(60px, 16vmin, 140px); line-height: 1; display: block; }
 
 /* ---------- Count to 30 ---------- */
-.c30 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; width: min(96vw, calc((100vh - 150px) * 1.15)); }
-@media (max-aspect-ratio: 3/4) { .c30 { grid-template-columns: repeat(5, 1fr); width: min(96vw, calc((100vh - 150px) * 0.8)); } }
-.c30 .n { aspect-ratio: 1; border-radius: 16px; background: #fff; font-size: clamp(22px, 6vmin, 48px); font-weight: 900; color: #2d3436; box-shadow: 0 5px 0 rgba(0,0,0,.12); position: relative; transition: transform .12s; }
+.c30 { display: grid; gap: 8px; justify-content: center; }
+.c30 .n { border-radius: 16px; background: #fff; font-size: clamp(22px, 6vmin, 48px); font-weight: 900; color: #2d3436; box-shadow: 0 5px 0 rgba(0,0,0,.12); position: relative; transition: transform .12s; }
 .c30 .n:active { transform: scale(.94); }
 .c30 .n.done { background: #7ed957; color: #fff; }
 .c30 .n.ten { background: #ffd32a; }
