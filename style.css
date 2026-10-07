@@ -255,3 +255,5 @@ h1 { font-size: clamp(32px, 7vw, 64px); margin: 0; text-shadow: 0 4px 0 rgba(0,0
 .rec-btn.toggle.on { background: #ffe9f1; outline: 3px solid #ff6b81; }
 .rec-btn.danger { background: #fff; color: #c62828; }
 .rec-row.rec .rec-text::after { content: "  🔴 recording…"; font-weight: 900; color: #e53935; }
+.voice-opt.mine { background: #fff3f7; border: 3px dashed #ff6b81; }
+.voice-opt.mine.on { border-style: solid; }
