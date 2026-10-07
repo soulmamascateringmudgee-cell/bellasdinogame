@@ -82,47 +82,6 @@
     count(n) { tone({ freq: 440 * Math.pow(2, (n - 1) / 6), to: 440 * Math.pow(2, (n - 1) / 6) * 1.3, dur: 0.18, vol: 0.22 }); }
   };
 
-  /* ---------- Voice ---------- */
-  let voice = null, voicesReady = false;
-  function pickVoice() {
-    if (!("speechSynthesis" in window)) return;
-    const vs = speechSynthesis.getVoices();
-    if (!vs.length) return;
-    voicesReady = true;
-    const pref = [
-      v => /en-AU/i.test(v.lang) && /karen|catherine|female|natural/i.test(v.name),
-      v => /en-AU/i.test(v.lang),
-      v => /en-GB/i.test(v.lang) && /female|natural|libby|sonia/i.test(v.name),
-      v => /en/i.test(v.lang) && /samantha|zira|aria|female|natural/i.test(v.name),
-      v => /en/i.test(v.lang)
-    ];
-    for (const p of pref) { const v = vs.find(p); if (v) { voice = v; break; } }
-  }
-  if ("speechSynthesis" in window) {
-    pickVoice();
-    speechSynthesis.onvoiceschanged = pickVoice;
-  }
-
-  let lastText = "";
-  function say(text, opts = {}) {
-    lastText = text;
-    if (!("speechSynthesis" in window)) return;
-    if (!voicesReady) pickVoice();
-    try {
-      speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      if (voice) u.voice = voice;
-      u.lang = voice ? voice.lang : "en-AU";
-      u.rate = opts.rate || 0.92;
-      u.pitch = opts.pitch || 1.15;
-      u.volume = 1;
-      // iOS sometimes needs a tiny delay after cancel()
-      setTimeout(() => speechSynthesis.speak(u), 60);
-    } catch (e) { /* voice is a bonus; never block the game */ }
-  }
-  function repeat() { if (lastText) say(lastText); }
-  function hush() { try { speechSynthesis.cancel(); } catch (e) {} }
-
+  SFX.context = ac;
   window.SFX = SFX;
-  window.VOICE = { say, repeat, hush };
 })();
