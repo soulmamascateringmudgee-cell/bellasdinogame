@@ -459,6 +459,10 @@
     }
   };
 
+  // Hooks for extra games in games2.js
+  window.G = { games, prompt, later, every, animate, starsAt, confetti, win, dinoCard, pick, shuffle, stage, show,
+    isBusy: () => busy, setBusy: v => { busy = v; }, PLAYER };
+
   /* ---------------- Navigation ---------------- */
   function startGame(id) {
     clearTimers(); busy = false; current = id;
@@ -474,7 +478,7 @@
 
   $("#start-dino").innerHTML = makeDino("trex");
   $("#btn-start").onclick = () => {
-    SFX.unlock(); SFX.chirp();
+    SFX.unlock(); VOICE.unlock(); SFX.chirp();
     VOICE.line("hello");
     show("home");
   };
@@ -487,17 +491,36 @@
   function renderVoices() {
     const list = $("#voice-list"); list.innerHTML = "";
     const vs = VOICE.voices(), cur = VOICE.current();
-    if (!vs.length) { list.innerHTML = '<div class="voice-opt">No voices found on this device yet. Tap Done and try again.</div>'; return; }
+    const mine = VOICE.rec.count(), total = Object.keys(LINES).length, usingMine = VOICE.useMine() && mine > 0;
+    // Option 1: the grown-up's own recordings
+    const m = document.createElement("button");
+    m.className = "voice-opt mine" + (usingMine ? " on" : "");
+    m.innerHTML = mine
+      ? `<span>🎤 <b>My voice</b> (${mine} of ${total} lines recorded${mine < total ? ", the rest use the device voice" : ""})</span><span class="tick">${usingMine ? "✅" : ""}</span>`
+      : `<span>🎤 <b>My voice</b> — nothing recorded yet. Tap "Record my voice" below.</span>`;
+    m.onclick = () => {
+      if (!mine) { SFX.unlock(); show("record"); renderRecorder(); return; }
+      VOICE.setUseMine(true); renderVoices();
+      VOICE.line(VOICE.rec.has("hello") ? "hello" : [...Object.keys(LINES)].find(id => VOICE.rec.has(id)));
+    };
+    list.appendChild(m);
+    list.insertAdjacentHTML("beforeend", `<h3 class="rec-group">Device voices</h3>`);
+    if (!vs.length) { list.insertAdjacentHTML("beforeend", '<div class="voice-opt">No device voices found yet. Tap Done and try again.</div>'); return; }
     vs.forEach(v => {
+      const on = !usingMine && cur && cur.voiceURI === v.voiceURI;
       const b = document.createElement("button");
-      b.className = "voice-opt" + (cur && cur.voiceURI === v.voiceURI ? " on" : "");
-      b.innerHTML = `<span>${VOICE.label(v)}</span><span class="tick">${cur && cur.voiceURI === v.voiceURI ? "✅" : ""}</span>`;
-      b.onclick = () => { VOICE.setVoice(v.voiceURI); VOICE.say(`Hello ${PLAYER}! Let's play with the dinosaurs!`); renderVoices(); };
+      b.className = "voice-opt" + (on ? " on" : "");
+      b.innerHTML = `<span>${VOICE.label(v)}</span><span class="tick">${on ? "✅" : ""}</span>`;
+      b.onclick = () => { VOICE.setVoice(v.voiceURI); VOICE.setUseMine(false); VOICE.say(`Hello ${PLAYER}! Let's play with the dinosaurs!`); renderVoices(); };
       list.appendChild(b);
     });
   }
-  $("#btn-voice").onclick = () => { SFX.unlock(); show("voice"); renderVoices(); setTimeout(renderVoices, 400); };
-  $("#btn-voice-back").onclick = () => { SFX.tap(); show("start"); };
+  function voiceBadge() {
+    VOICE.ready.then(() => { $("#btn-voice").textContent = (VOICE.useMine() && VOICE.rec.count()) ? "🎤 Voice: Mummy" : "🗣️ Voice"; });
+  }
+  voiceBadge();
+  $("#btn-voice").onclick = () => { SFX.unlock(); VOICE.unlock(); show("voice"); renderVoices(); setTimeout(renderVoices, 400); };
+  $("#btn-voice-back").onclick = () => { SFX.tap(); voiceBadge(); show("start"); };
 
   // Grown-ups: record your own voice for every line
   let recCurrent = null;
@@ -532,10 +555,10 @@
     });
     const cur = list.querySelector(".rec-row.rec"); if (cur) cur.scrollIntoView({ block: "center" });
   }
-  $("#btn-record").onclick = () => { SFX.unlock(); show("record"); renderRecorder(); };
+  $("#btn-record").onclick = () => { SFX.unlock(); VOICE.unlock(); show("record"); renderRecorder(); };
   $("#rec-toggle").onclick = () => { VOICE.setUseMine(!VOICE.useMine()); renderRecorder(); };
   $("#rec-clear").onclick = () => { if (confirm("Delete all your recordings?")) { VOICE.rec.clear(); renderRecorder(); } };
-  $("#btn-record-back").onclick = async () => { if (VOICE.rec.recording()) await VOICE.rec.stop(); VOICE.rec.release(); recCurrent = null; SFX.tap(); show("voice"); };
+  $("#btn-record-back").onclick = async () => { if (VOICE.rec.recording()) await VOICE.rec.stop(); VOICE.rec.release(); recCurrent = null; if (VOICE.rec.count()) VOICE.setUseMine(true); SFX.tap(); show("voice"); renderVoices(); };
   $("#btn-repeat").onclick = () => { SFX.tap(); VOICE.repeat(); };
   $("#btn-again").onclick = () => { SFX.tap(); startGame(current); };
   $("#btn-win-home").onclick = () => { SFX.tap(); goHome(); };

@@ -11,6 +11,13 @@ A tap-only dinosaur game for a three-year-old. Runs in any phone or tablet brows
 - **Dino Band** – free play, every dino makes its own sound.
 - **Big or Small?** – tap the big one or the small one.
 
+Harder games (⭐ on the menu):
+- **Dino Match** – memory pairs: 3, then 4, then 6 pairs of face-down eggs.
+- **Dino Puzzle** – jigsaw: tap a piece, tap where it goes. 4, 6, then 9 pieces.
+- **Spot the Difference** – two pictures, find 1, 2, then 3 things that changed.
+- **Alphabet** – "Find the letter B! B is for Brachiosaurus!", four letters to choose from.
+- **Count to 30** – tap the numbers in order, a baby dino hops along, with a gentle hint if she's stuck.
+
 ## Made for little kids
 - Every prompt is spoken out loud, so no reading needed. The 🔊 button repeats it.
 - No wrong-answer buzzers. A wrong tap just wobbles and gently says what to look for.
@@ -25,7 +32,7 @@ A tap-only dinosaur game for a three-year-old. Runs in any phone or tablet brows
 Tip: the first tap on "Tap to play!" is what switches the sound and voice on (browsers require a tap first).
 
 ## Use your own voice (recommended)
-Start screen → **Voice** → **Record my voice**. Tap Record, read the line, tap Stop. There are 67 short lines (about 10 minutes). Lines you skip fall back to the device voice. Recordings are saved on that device only (in the browser), so record on the iPad Bella uses. Safari will ask for microphone permission once.
+Start screen → **Voice** → **Record my voice**. Tap Record, read the line, tap Stop. There are 133 short lines (about 20 minutes, fine to do in bits). Lines you skip fall back to the device voice. Recordings are saved on that device only (in the browser), so record on the iPad Bella uses. Safari will ask for microphone permission once.
 
 ## Making the device voice sound natural
 The game uses the voices built into the device. The default ones can sound robotic.

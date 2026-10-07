@@ -86,11 +86,13 @@
     const tx = db.transaction("clips", "readwrite"); tx.objectStore("clips").put(blob, id);
   }
   function delClip(id) {
+    const c = clips.get(id); if (c && c.url) URL.revokeObjectURL(c.url);
     clips.delete(id);
     if (!db) return;
     const tx = db.transaction("clips", "readwrite"); tx.objectStore("clips").delete(id);
   }
   function clearClips() {
+    clips.forEach(c => { if (c.url) URL.revokeObjectURL(c.url); });
     clips.clear();
     if (!db) return;
     const tx = db.transaction("clips", "readwrite"); tx.objectStore("clips").clear();
@@ -100,30 +102,42 @@
   function useMine() { try { return localStorage.getItem("dinoland.useMyVoice") !== "0"; } catch (e) { return true; } }
   function setUseMine(on) { try { localStorage.setItem("dinoland.useMyVoice", on ? "1" : "0"); } catch (e) {} }
 
-  async function buffer(id) {
-    const c = clips.get(id); if (!c) return null;
-    if (c.buffer) return c.buffer;
-    const ctx = SFX.context(); if (!ctx) return null;
+  /* Playback through one reusable <audio> element: Safari plays its own recordings reliably this way,
+     and the element only needs unlocking once (on the first tap). */
+  const player = new Audio();
+  player.preload = "auto"; player.playsInline = true; player.setAttribute("playsinline", "");
+  let unlocked = false;
+  function unlock() {
+    if (unlocked) return; unlocked = true;
     try {
-      const ab = await c.blob.arrayBuffer();
-      c.buffer = await new Promise((res, rej) => ctx.decodeAudioData(ab, res, rej));
-      return c.buffer;
-    } catch (e) { return null; }
+      player.src = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+      const p = player.play(); if (p && p.catch) p.catch(() => {});
+    } catch (e) {}
   }
-  let playing = null;
-  function playBuffer(buf) {
+  function url(id) {
+    const c = clips.get(id); if (!c) return null;
+    if (!c.url) c.url = URL.createObjectURL(c.blob);
+    return c.url;
+  }
+  let playingId = null;
+  function playClip(id) {
     return new Promise(resolve => {
-      const ctx = SFX.context(); if (!ctx) return resolve();
-      const src = ctx.createBufferSource(); src.buffer = buf;
-      const g = ctx.createGain(); g.gain.value = 1.4;     // phone mics record quietly; lift it a little
-      src.connect(g).connect(ctx.destination);
-      src.onended = () => { if (playing === src) playing = null; resolve(); };
-      playing = src; src.start();
-      setTimeout(resolve, buf.duration * 1000 + 300);
+      const u = url(id); if (!u) return resolve(false);
+      let done = false;
+      const finish = ok => { if (done) return; done = true; player.onended = player.onerror = null; if (playingId === id) playingId = null; resolve(ok); };
+      try {
+        player.pause(); player.src = u; player.currentTime = 0; player.volume = 1;
+        player.onended = () => finish(true);
+        player.onerror = () => finish(false);
+        playingId = id;
+        const p = player.play();
+        if (p && p.catch) p.catch(() => finish(false));
+        setTimeout(() => finish(true), 20000);
+      } catch (e) { finish(false); }
     });
   }
   function hush() {
-    try { if (playing) { playing.stop(); playing = null; } } catch (e) {}
+    try { player.pause(); player.onended = player.onerror = null; playingId = null; } catch (e) {}
     try { speechSynthesis.cancel(); } catch (e) {}
   }
 
@@ -138,9 +152,10 @@
     for (const id of ids) {
       if (my !== token) return;
       const text = LINES[id] || id;
-      const buf = useMine() ? await buffer(id) : null;
+      let ok = false;
+      if (useMine() && clips.has(id)) ok = await playClip(id);
       if (my !== token) return;
-      if (buf) await playBuffer(buf); else await speak(text);
+      if (!ok) await speak(text);
     }
   }
   function repeat() { if (last) line(last); }
@@ -171,7 +186,7 @@
       });
     },
     recording: () => !!(recorder && recorder.state === "recording"),
-    async play(id) { hush(); const b = await buffer(id); if (b) await playBuffer(b); },
+    async play(id) { hush(); unlock(); return playClip(id); },
     remove: delClip,
     clear: clearClips,
     has: id => clips.has(id),
@@ -179,5 +194,5 @@
     release() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
   };
 
-  window.VOICE = { line, repeat, say, hush, setVoice, current: () => voice, voices: englishVoices, label, rec, useMine, setUseMine, ready };
+  window.VOICE = { line, repeat, say, hush, unlock, setVoice, current: () => voice, voices: englishVoices, label, rec, useMine, setUseMine, ready };
 })();
